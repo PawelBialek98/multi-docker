@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t pawelbialek/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true pawelbialek/react-test npm test
+
+after_success:
+  - docker build -t pawelbialek/multi-client ./client
+  - docker build -t pawelbialek/multi-nginx ./nginx
+  - docker build -t pawelbialek/multi-server ./server
+  - docker build -t pawelbialek/multi-worker ./worker
+
+  - docker login -u "$DOCKER_ID" -p "$DOCKER_PASSWORD"
+
+  - docker push pawelbialek/multi-client
+  - docker push pawelbialek/multi-nginx
+  - docker push pawelbialek/multi-server
+  - docker push pawelbialek/multi-worker
